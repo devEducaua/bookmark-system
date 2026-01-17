@@ -34,6 +34,12 @@ cont.get("/:id", describeRoute({
                 content: {
                     "application/json": { schema: resolver(bookmarkResponseSchema) }
                 }
+            },
+            404: {
+                description: "bookmark not found",
+                content: {
+                    "application/json": { schema: resolver(v.string()) }
+                }
             }
         }
     }),

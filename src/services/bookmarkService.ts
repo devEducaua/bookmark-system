@@ -3,6 +3,7 @@ import db from "../db";
 import { bookmarksTable } from "../db/schema";
 import { BookmarkDtoRequest, BookmarkDtoResponse } from "../schemas/bookmarkSchemas";
 import Bookmark from "../domain/bookmark";
+import { NotFoundError } from "../utils/errors";
 
 export default class BookmarkService {
 
@@ -12,8 +13,11 @@ export default class BookmarkService {
     }
 
     async getOne(id: number): Promise<BookmarkDtoResponse> {
-        const [result] = await db.select().from(bookmarksTable).where(eq(bookmarksTable.id, id));
-        return result;
+        const result = await db.select().from(bookmarksTable).where(eq(bookmarksTable.id, id));
+
+        if (result.length === 0) throw new NotFoundError("bookmark not found");
+
+        return result[0];
     }
 
     async create(dto: BookmarkDtoRequest, userId: number): Promise<number> {

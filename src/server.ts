@@ -1,8 +1,8 @@
 import { Context, Hono } from "hono";
 import { jwt } from "hono/jwt";
-import { userController } from "./controllers/userController";
-import { bookmarkController } from "./controllers/bookmarkController";
+import { logger } from "hono/logger";
 import { DomainError, AuthError, NotFoundError } from "./utils/errors";
+import router from "./routes";
 
 const app = new Hono().basePath("/api");
 
@@ -20,15 +20,17 @@ app.onError((err: Error, c: Context) => {
 
 })
 
+app.use(logger());
+
 app.use(
     "/bookmarks/*",
     jwt({
-        secret: process.env.JWT_SECRET!
+        secret: process.env.JWT_SECRET!,
+        alg: "HS256"
     })
 )
 
-app.route("/users", userController);
-app.route("/bookmarks", bookmarkController);
+app.route("/", router);
 
 export default {
     fetch: app.fetch,

@@ -4,15 +4,18 @@ import { usersTable } from "../db/schema";
 import { UserDtoRequest, UserDtoResponse } from "../schemas/userSchemas";
 import User from "../domain/user";
 import { AuthDtoRequest } from "../schemas/authSchemas";
-import { AuthError } from "../utils/errors";
+import { AuthError, NotFoundError } from "../utils/errors";
 
 export default class UserService {
 
     async authenticate(dto: AuthDtoRequest) {
         const { email, password } = dto;
 
-        const [result] = await db.select({ id: usersTable.id, password: usersTable.password }).from(usersTable).where(eq(usersTable.email, email));
-        const dbPassword = result.password;
+        const result = await db.select({ id: usersTable.id, password: usersTable.password }).from(usersTable).where(eq(usersTable.email, email));
+
+        if (result.length === 0) throw new NotFoundError("user not found");
+
+        const dbPassword = result[0].password;
 
         const isValid: boolean = await Bun.password.verify(password, dbPassword);
 
@@ -26,8 +29,11 @@ export default class UserService {
         return result; }
 
     async getOne(id: number): Promise<UserDtoResponse> {
-        const [result] = await db.select().from(usersTable).where(eq(usersTable.id, id));
-        return result;
+        const result = await db.select().from(usersTable).where(eq(usersTable.id, id));
+
+        if (result.length === 0) throw new NotFoundError("user not found");
+
+        return result[0];
     }
 
     async create(dto: UserDtoRequest) {

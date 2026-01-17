@@ -34,6 +34,12 @@ cont.get("/:id", describeRoute({
                 content: {
                     "application/json": { schema: resolver(userResponseSchema) }
                 }
+            },
+            404: {
+                description: "user not found",
+                content: {
+                    "application/json": { schema: resolver(v.string()) }
+                }
             }
         }
     }),
